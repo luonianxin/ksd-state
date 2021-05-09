@@ -1,0 +1,33 @@
+server:
+  port: 8080
+# 数据库连接
+spring:
+  application:
+    name: ksd-state
+  profiles:
+    active: dev
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    locale: zh_CN
+    # 解决ｊｓｏｎ返回过程中ｌｏｎｇ精度丢失问题
+    generator:
+      write-numbers-as-strings: true
+      write-bigdecimal-as-plain: true
+  mvc:
+    servlet:
+      load-on-startup: 1 #springboot 接口第一次访问都很慢，因为dispatcherServlet不是一开始就加载的
+
+  main:
+    allow-bean-definition-overriding: true
+  thymeleaf:
+    suffix: ".html"
+# mybatis-plus配置
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  mapper-locations: classpath*:/mapper/*.xml
+  type-aliases-package: com.kongoking.ksdstate.entity
+logging:
+  level:
+    root: info

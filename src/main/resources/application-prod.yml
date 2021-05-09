@@ -1,0 +1,18 @@
+server:
+  port: 8080
+# 数据库连接
+spring:
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/springboot?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456
+    hikari:
+      connection-timeout: 60000
+      validation-timeout: 3000
+      idle-timeout: 5
+      max-lifetime: 60000
+      maximum-pool-size: 400
+      minimum-idle: 100
+      read-only: false
