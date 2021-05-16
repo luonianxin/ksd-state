@@ -17,10 +17,13 @@
             color: white;
         }
         .ksd-headerbox .ksd-cheader-box{max-width: 680px;margin: 0 auto;text-align: center;padding-top: 20px;}
+        [v-cloak] {
+            display: none;
+        }
     </style>
 </head>
 <body>
-    <div id="app">
+    <div id="app" v-cloak>
 
         <!-- 头部 -->
         <header>
@@ -32,6 +35,7 @@
                     <div class="pt10">
                         <span>参与人数: {{stateVo.personnum}}</span>
                         <span>统计时间：{{stateVo.createTime}}</span>
+                        <input type="hidden" id="stateId" th:value="${stateId}"/>
                     </div>
                 </div>
             </div>
@@ -67,10 +71,12 @@
     var app = new Vue({
         el:"#app",
         data:{
-            stateVo:{}
+            stateVo:{},
+            stateId:''
         },
         created:function(){
             let that = this;
+            this.stateId = document.getElementById("stateId").value;
             this.loadStateDetails(function(stateDetailList){
                 that.loadCharts(stateDetailList);
             });
@@ -79,7 +85,11 @@
         methods:{
             loadStateDetails(callback){
                 const that = this;
-                axios.get('/state/detail?stateId=1').then(function(response){
+                // axios.get('/state/detail?stateId='+this.stateId).then(function(response){
+                //     that.stateVo = response.data.data.stateVo;
+                //     callback && callback(response.data.data.stateVo.stateDetailList);
+                // });
+                axios.post('/state/detailByPost',{'stateId':this.stateId}).then(function(response){
                     that.stateVo = response.data.data.stateVo;
                     callback && callback(response.data.data.stateVo.stateDetailList);
                 });
