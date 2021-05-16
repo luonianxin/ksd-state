@@ -20,90 +20,134 @@
     </style>
 </head>
 <body>
-    <!-- 头部 -->
-    <header>
+    <div id="app">
 
-        <div class="ksd-headerbox">
-            <div class="ksd-cheader-box">
-                <h3 class="fsz28 pt20">2021年度4月学相伴计数反馈统计排行榜</h3>
-                <p class="pt15">layui（谐音：类 UI) 是一套开源的 Web UI 解决方案，采用自身经典的模块化规范，并遵循原生 HTML/CSS/JS 的开发方式，极易上手，拿来即用。其风格简约轻盈，而组件优雅丰盈，从源代码到使用方法的每一处细节都经过精心雕琢，非常适合网页界面的快速开发。layui 区别于那些基于 MVVM 底层的前端框架，却并非逆道而行，而是信奉返璞归真之道。准确地说，它更多是面向后端开发者，你无需涉足前端各种工具，只需面对浏览器本身，让一切你所需要的元素与交互，从这里信手拈来。</p>
-                <div class="pt10">
-                    <span>参与人数:50</span>
-                    <span>统计时间：y/m/d hh:mm　　[[${id}]]</span>
+        <!-- 头部 -->
+        <header>
+
+            <div class="ksd-headerbox">
+                <div class="ksd-cheader-box">
+                    <h3 class="fsz28 pt20">{{stateVo.title}}</h3>
+                    <p class="pt15" v-html="stateVo.description"></p>
+                    <div class="pt10">
+                        <span>参与人数: {{stateVo.personnum}}</span>
+                        <span>统计时间：{{stateVo.createTime}}</span>
+                    </div>
                 </div>
             </div>
-        </div>
-    </header>
-    <!-- 主题内容 -->
-    <section>
-        <style>
-            .ksd-container{padding-top: 30px;}
-        </style>
-          <div class="layui-container ksd-container">
-              <div class="layui-row" style="text-align: center">
-                  <div  id="box" style="width: 100%;height:400px">
-
+        </header>
+        <!-- 主题内容 -->
+        <section>
+            <style>
+                .ksd-container{padding-top: 30px;}
+            </style>
+              <div class="layui-container ksd-container">
+                  <div class="layui-row" style="text-align: center">
+                      <div  id="box" style="width: 100%;height:400px">
+                      </div>
                   </div>
               </div>
-          </div>
-    </section>
-    <!-- 底部 -->
-    <footer>
-        <div class="layui-container ksd-container">
-            <div class="layui-row">
-                <div class="layui-col-md12 tc">
-                    <p class="b fsz20">统计还剩余：０天8小时25分钟</p>
+        </section>
+        <!-- 底部 -->
+        <footer>
+            <div class="layui-container ksd-container">
+                <div class="layui-row">
+                    <div class="layui-col-md12 tc">
+                        <p class="b fsz20">统计还剩余：{{stateVo.endtime}}</p>
+                    </div>
                 </div>
             </div>
-        </div>
-    </footer>
-
+        </footer>
+    </div>
 <script src="/js/vue.min.js"></script>
 <script src="/layui/layui.js"></script>
 <script src="/js/echarts.min.js"></script>
+<script src="/js/axios.min.js"></script>
 <script>
-    const chartDom = document.getElementById('box');
-    var myChart = echarts.init(chartDom);
-    var option;
+    var app = new Vue({
+        el:"#app",
+        data:{
+            stateVo:{}
+        },
+        created:function(){
+            let that = this;
+            this.loadStateDetails(function(stateDetailList){
+                that.loadCharts(stateDetailList);
+            });
+        },
 
-    option = {
-        tooltip: {
-            trigger: 'axis',
-            axisPointer: {            // 坐标轴指示器，坐标轴触发有效
-                type: 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
-            }
-        },
-        grid: {
-            left: '3%',
-            right: '4%',
-            bottom: '3%',
-            containLabel: true
-        },
-        xAxis: [
-            {
-                type: 'category',
-                data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                axisTick: {
-                    alignWithLabel: true
+        methods:{
+            loadStateDetails(callback){
+                const that = this;
+                axios.get('/state/detail?stateId=1').then(function(response){
+                    that.stateVo = response.data.data.stateVo;
+                    callback && callback(response.data.data.stateVo.stateDetailList);
+                });
+
+
+                // 以下方式会出现this指针偏移的问题
+                // axios.get('/state/detail?stateId=1').then(function(response){
+                //     this.stateVo = response.data.data;
+                // });
+                // 以下方法可以解决this的指向问题
+                // axios.get('/state/detail?stateId=1').then(response=>{
+                //     this.stateVo = response.data.data;
+                // });
+            },
+            loadCharts(stateDetailList){
+                if(stateDetailList && stateDetailList.length === 0)return;
+                let xAxisDataList = [];
+                let seriesDataList = [];
+
+                for (let i = 0; i < stateDetailList.length; i++) {
+                    xAxisDataList.push(stateDetailList[i].title);
+                    seriesDataList.push(stateDetailList[i].itemnum);
                 }
-            }
-        ],
-        yAxis: [
-            {
-                type: 'value'
-            }
-        ],
-        series: [
-            {
-                name: '直接访问',
-                type: 'bar',
-                barWidth: '60%',
-                data: [10, 52, 200, 334, 390, 330, 220]
-            }
-        ]
-    };
+                const chartDom = document.getElementById('box');
+                let myChart = echarts.init(chartDom);
+                let option;
 
-    option && myChart.setOption(option);
+                option = {
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {            // 坐标轴指示器，坐标轴触发有效
+                            type: 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+                        }
+                    },
+                    grid: {
+                        left: '3%',
+                        right: '4%',
+                        bottom: '3%',
+                        containLabel: true
+                    },
+                    xAxis: [
+                        {
+                            type: 'category',
+                            data: xAxisDataList,
+                            axisTick: {
+                                alignWithLabel: true
+                            }
+                        }
+                    ],
+                    yAxis: [
+                        {
+                            type: 'value'
+                        }
+                    ],
+                    series: [
+                        {
+                            name: '选择人数',
+                            type: 'bar',
+                            barWidth: '60%',
+                            data: seriesDataList
+                        }
+                    ]
+                };
+
+                myChart.setOption(option);
+            }
+        }
+    });
 </script>
 </body>
 </html>

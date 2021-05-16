@@ -41,7 +41,7 @@ public class StateController {
         State state = stateService.getById(stateId);
         if(state != null){
         // 2.如果存在，那就进入明细页面
-            modelMap.put("id",stateId);
+            modelMap.put("stateId",stateId);
             return "state/detail";
         }
         // 3.如果不存在那么就进入错误页面
@@ -58,7 +58,7 @@ public class StateController {
      */
     @GetMapping("/state/detail")
     @ResponseBody
-    public ResponseWrapper getStateDetails(Integer stateId){
+    public ResponseWrapper getStateDetails(@RequestParam("stateId") Integer stateId){
         if(StringUtils.isEmpty(stateId)){
             return ResponseWrapper.error().code(503).message("未找到统计项");
         }
